@@ -4,9 +4,36 @@ import urllib
 import datetime
 import sys
 import json
+import click
 
 # GCAL_BASE_URL
 # OH_BASE_URL
+
+
+@click.group(context_settings={"help_option_names": ["-h", "--help"]})
+@click.version_option()
+@click.option("-d", "--debug", is_flag=True, help="Debug output")
+@click.pass_context
+def main(ctx, debug):
+    """Queue command line interface."""
+    # Pass global flags to subcommands via Click context
+    # https://click.palletsprojects.com/en/latest/commands/#nested-handling-and-contexts
+    ctx.ensure_object(dict)
+    ctx.obj["DEBUG"] = debug
+
+
+@main.command()
+@click.pass_context
+def schedule(ctx):
+    """Schedule."""
+    pass
+
+
+@main.command()
+@click.pass_context
+def groups(ctx):
+    """Groups."""
+    pass
 
 
 def get_calendar_events(api_key, cal_id):
@@ -31,6 +58,7 @@ def timestamp_to_half_hour_idx(timestamp):
 
 
 def form_schedule(events):
+    breakpoint()
     items = events['items']
     oh_sessions = filter(
         lambda x: x['status'] != 'cancelled' and 'Office Hours' in x['summary'], items)
@@ -99,9 +127,11 @@ def main():
     put_schedule(oh_queue_id, oh_session, schedule)
 
     # Pipe input from agio
-    groups = json.loads("".join(sys.stdin.readlines()))
-    put_groups(oh_queue_id, oh_session, groups)
+    # groups = json.loads("".join(sys.stdin.readlines()))
+    # put_groups(oh_queue_id, oh_session, groups)
 
 
 if __name__ == '__main__':
-    main()
+    # These errors are endemic to click
+    # pylint: disable=no-value-for-parameter,unexpected-keyword-arg
+    main(obj={})
