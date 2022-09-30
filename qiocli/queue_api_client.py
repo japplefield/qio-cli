@@ -1,5 +1,5 @@
 """
-Google Calendar REST API client, a wrapper around the requests library.
+Queue REST API client, a wrapper around the requests library.
 
 Based on HTTPClient by James Perretta
 https://github.com/eecs-autograder/autograder-contrib/
@@ -13,46 +13,46 @@ from urllib.parse import urljoin, urlencode
 import requests
 
 
-class GoogleCalendarAPIClient:
-    """Send authenticated requests to the Google Calendar API.
+class QueueAPIClient:
+    """Send authenticated requests to the eecsoh.eecs.umich.edu REST API.
 
-    GoogleCalendarAPIClient is a wrapper around the requests library that adds an
-    authentication key to the query.  It supports all the arguments
+    QueueAPIClient is a wrapper around the requests library that adds a
+    session cookie to the query.  It supports all the arguments
     accepted by the corresponding requests library methods.
     https://requests.readthedocs.io/
 
-    Avoid constructing an GoogleCalendarAPIClient directly.  Instead, use
-    GoogleCalendarAPIClient.make_default().
+    Avoid constructing an QueueAPIClient directly.  Instead, use
+    QueueAPIClient.make_default().
 
     """
 
     @staticmethod
     def make_default(
-            key_filename='.gcalkey',
-            base_url='https://www.googleapis.com/calendar/v3/calendars/',
+            session_filename='.ohsession',
+            base_url='https://eecsoh.eecs.umich.edu/api/queues/',
             debug=False
     ):
-        """Create an GoogleCalendarAPIClient instance with API key found in key_filename.
+        """Create an QueueAPIClient instance with API session found in session_filename.
 
-        Key file discovery works as follows:
-        - If key_filename is just a filename (no path information),
+        Session file discovery works as follows:
+        - If session_filename is just a filename (no path information),
         the current directory and every upward directory until the home
         directory will be searched for a file with that name.
-        - If key_filename is an absolute path or a relative path that
+        - If session_filename is an absolute path or a relative path that
         contains at least one directory, that file will be opened and
-        the key read to it.
+        the session read to it.
 
         base_url will be prepended to all URLs passed to the client's
-        request methods and defaults to https://www.googleapis.com/calendar/v3/calendars/.
+        request methods and defaults to https://eecsoh.eecs.umich.edu/api/queues/.
         """
-        return GoogleCalendarAPIClient(get_api_key(key_filename), base_url, debug)
+        return QueueAPIClient(get_api_session(session_filename), base_url, debug)
 
-    def __init__(self, api_key, base_url, debug=False):
-        """Create an GoogleCalendarAPIClient instance using a raw api_key.
+    def __init__(self, api_session, base_url, debug=False):
+        """Create an QueueAPIClient instance using a raw api_session.
 
-        Most users should use GoogleCalendarAPIClient.make_default() instead.
+        Most users should use QueueAPIClient.make_default() instead.
         """
-        self.api_key = api_key
+        self.api_session = api_session
         self.base_url = base_url
         self.debug = debug
 
@@ -60,11 +60,15 @@ class GoogleCalendarAPIClient:
         """Call requests.get with authentication headers and base URL."""
         return self.do_request(requests.get, path, *args, **kwargs)
 
+    def put(self, path, *args, **kwargs):
+        """Call requests.put with authentication headers and base URL."""
+        return self.do_request(requests.put, path, *args, **kwargs)
+
     def do_request(self, method_func, path, *args, **kwargs):
         """Add authentication, base URL, call method, parse JSON.
 
-        - Append path to Google Calendar API base URL
-        - Add key query arg
+        - Append path to OH Queue API base URL
+        - Add session query arg
         - Call method_func
         - Check HTTP status code
         - Parse JSON
@@ -72,11 +76,8 @@ class GoogleCalendarAPIClient:
         # Append path to base URL
         url = urljoin(self.base_url, path)
 
-        query = copy.deepcopy(kwargs.pop('query', {}))
-        query['key'] = self.api_key
-        query = urlencode(query)
-
-        url = f"{url}?{query}"
+        headers = copy.deepcopy(kwargs.pop('headers', {}))
+        headers['Cookie'] = f"session={self.api_session}"
 
         # Print request method and url
         if self.debug:
@@ -85,7 +86,7 @@ class GoogleCalendarAPIClient:
 
         # Call the underlying requests library function
         response = method_func(
-            url, *args, headers=kwargs.pop('headers', {}), **kwargs)
+            url, *args, headers=headers, **kwargs)
 
         # Print the response
         if self.debug:
@@ -99,9 +100,7 @@ class GoogleCalendarAPIClient:
             )
 
         # Decode JSON
-        if "Content-Type" not in response.headers:
-            sys.exit(f"Error: no Content-Type from: {response.url}")
-        elif 'application/json' in response.headers['Content-Type']:
+        if 'Content-Type' in response.headers and 'application/json' in response.headers['Content-Type']:
             try:
                 return response.json()
             except json.JSONDecodeError:
@@ -109,42 +108,38 @@ class GoogleCalendarAPIClient:
                     f"Error: JSON decoding failed for url {response.url}\n"
                     f"{response.text}"
                 )
-        else:
-            sys.exit(
-                "Error: Unknown Content-Type "
-                f"'{response.headers['Content-Type']}' for url {response.url}"
-            )
 
 
-def get_api_key(key_filename: str) -> str:
-    """Search for Google Calendar key.
+def get_api_session(session_filename: str) -> str:
+    """Search for eecsoh.eecs.umich.edu session.
 
-    Key file discovery works as follows:
-    - If key_filename is just a filename (no path information), the current
+    Session file discovery works as follows:
+    - If session_filename is just a filename (no path information), the current
       directory and every upward directory until the home directory will be
       searched for a file with that name.
-    - If key_filename is an absolute path or a relative path that contains
-      at least one directory, that file will be opened and the key read.
+    - If session_filename is an absolute path or a relative path that contains
+      at least one directory, that file will be opened and the session read.
     """
-    # Key filename provided and it does not exist
-    if os.path.dirname(key_filename) and not os.path.isfile(key_filename):
-        raise KeyFileNotFound("Key file does not exist: {key_filename}")
+    # Session filename provided and it does not exist
+    if os.path.dirname(session_filename) and not os.path.isfile(session_filename):
+        raise SessionFileNotFound(
+            "Session file does not exist: {session_filename}")
 
     # Make sure that we're starting in a subdir of the home directory
     curdir = os.path.abspath(os.curdir)
     if os.path.expanduser('~') not in curdir:
-        raise KeyFileNotFound(f"Invalid search path: {curdir}")
+        raise SessionFileNotFound(f"Invalid search path: {curdir}")
 
     # Search, walking up the directory structure from PWD to home
     for dirname in walk_up_to_home_dir():
-        filename = os.path.join(dirname, key_filename)
+        filename = os.path.join(dirname, session_filename)
         if os.path.isfile(filename):
-            with open(filename, encoding="utf8") as keyfile:
-                return keyfile.read().strip()
+            with open(filename, encoding="utf8") as sessionfile:
+                return sessionfile.read().strip()
 
-    # Didn't find a key file
-    raise KeyFileNotFound(
-        f"Key file not found: {key_filename}."
+    # Didn't find a session file
+    raise SessionFileNotFound(
+        f"Session file not found: {session_filename}."
     )
 
 
@@ -171,5 +166,5 @@ def print_response(response):
         print(formatted)
 
 
-class KeyFileNotFound(Exception):
-    """Exception type indicating failure to locate user key file."""
+class SessionFileNotFound(Exception):
+    """Exception type indicating failure to locate user session file."""

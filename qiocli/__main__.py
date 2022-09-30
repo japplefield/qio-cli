@@ -5,7 +5,7 @@ import datetime
 import sys
 import json
 import click
-from qiocli import GoogleCalendarAPIClient
+from qiocli import GoogleCalendarAPIClient, QueueAPIClient
 
 # GCAL_BASE_URL
 # OH_BASE_URL
@@ -25,8 +25,9 @@ def main(ctx, debug):
 
 @main.command()
 @click.option("-g", "--google-calendar", "gcal_id", nargs=1, help="Google Calendar ID")
+@click.argument("queue", required=True)
 @click.pass_context
-def schedule(ctx, gcal_id):
+def schedule(ctx, gcal_id, queue):
     """Schedule."""
     if not gcal_id:
         sys.exit("schedule without -g is not yet implemented.")
@@ -42,25 +43,22 @@ def schedule(ctx, gcal_id):
         "orderBy": "startTime"
     }
     events_json = gcal_client.get(path, query=query)
-    breakpoint()
     schedule = form_schedule(events_json)
 
-    oh_session = os.environ.get("OH_SESSION")  # From eecsoh
-    oh_queue_id = os.environ.get("OH_QUEUE_ID")
-    put_schedule(oh_queue_id, oh_session, schedule)
-    pass
+    queue_client = QueueAPIClient.make_default()
+    path = f"{queue}/schedule"
+    queue_client.put(path, json=schedule)
 
 
 @main.command()
-@click.argument("filename", required=True)
+@click.option("-f", "--filename", help="File containing list of groups")
+@click.argument("queue", required=True)
 @click.pass_context
-def groups(ctx, filename):
+def groups(ctx, queue, filename):
     """Groups.
 
-    FILENAME containing list of groups.
+    QUEUE is the specific queue id.
     """
-    oh_session = os.environ.get("OH_SESSION")  # From eecsoh
-    oh_queue_id = os.environ.get("OH_QUEUE_ID")
 
     with open(filename) as fh:
         groups_input = json.load(fh)
@@ -81,7 +79,6 @@ def timestamp_to_half_hour_idx(timestamp):
 
 
 def form_schedule(events):
-    breakpoint()
     items = events['items']
     oh_sessions = filter(
         lambda x: x['status'] != 'cancelled' and 'Office Hours' in x['summary'], items)
@@ -99,16 +96,6 @@ def form_schedule(events):
         day = (event['start'].weekday() + 1) % 7
         schedule[day][start:end] = ["o" for i in range(end - start)]
     return ["".join(x) for x in schedule]
-
-
-def put_schedule(oh_queue_id, oh_session, schedule):
-    base_url = "https://eecsoh.eecs.umich.edu/api/queues"
-    headers = {
-        "Cookie": f"session={oh_session}",
-        "Content-Type": "text/plain;charset=UTF-8"
-    }
-    r = requests.put(f"{base_url}/{oh_queue_id}/schedule",
-                     headers=headers, json=schedule)
 
 
 def get_schedule(oh_queue_id, oh_session):
