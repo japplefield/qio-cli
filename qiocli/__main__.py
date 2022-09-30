@@ -5,6 +5,7 @@ import datetime
 import sys
 import json
 import click
+from qiocli import GoogleCalendarAPIClient
 
 # GCAL_BASE_URL
 # OH_BASE_URL
@@ -23,34 +24,56 @@ def main(ctx, debug):
 
 
 @main.command()
+@click.option("-g", "--google-calendar", "gcal_id", nargs=1, help="Google Calendar ID")
 @click.pass_context
-def schedule(ctx):
+def schedule(ctx, gcal_id):
     """Schedule."""
-    pass
-
-
-@main.command()
-@click.pass_context
-def groups(ctx):
-    """Groups."""
-    pass
-
-
-def get_calendar_events(api_key, cal_id):
-    base_url = "https://www.googleapis.com/calendar/v3/calendars"
-    events_url = f"{base_url}/{cal_id}/events"
+    if not gcal_id:
+        sys.exit("schedule without -g is not yet implemented.")
+    gcal_client = GoogleCalendarAPIClient.make_default()
+    path = f"{gcal_id}/events"
     now = datetime.datetime.now(datetime.timezone.utc)
     week_from_now = now + datetime.timedelta(weeks=1)
-    query = urllib.parse.urlencode({
-        "key": api_key,
+    query = {
         "singleEvents": True,
         "q": "Office Hours",
         "timeMin": now.isoformat(),
         "timeMax": week_from_now.isoformat(),
         "orderBy": "startTime"
-    })
-    full_url = f"{events_url}?{query}"
-    return requests.get(full_url).json()
+    }
+    events_json = gcal_client.get(path, query=query)
+    breakpoint()
+    schedule = form_schedule(events_json)
+
+    oh_session = os.environ.get("OH_SESSION")  # From eecsoh
+    oh_queue_id = os.environ.get("OH_QUEUE_ID")
+    put_schedule(oh_queue_id, oh_session, schedule)
+    pass
+
+
+@main.command()
+@click.argument("filename", required=True)
+@click.pass_context
+def groups(ctx, filename):
+    """Groups.
+
+    FILENAME containing list of groups.
+    """
+    oh_session = os.environ.get("OH_SESSION")  # From eecsoh
+    oh_queue_id = os.environ.get("OH_QUEUE_ID")
+
+    with open(filename) as fh:
+        groups_input = json.load(fh)
+    base_url = "https://eecsoh.eecs.umich.edu/api/queues"
+    headers = {
+        "Cookie": f"session={oh_session}",
+        "Content-Type": "text/plain;charset=UTF-8"
+    }
+    r = requests.put(f"{base_url}/{oh_queue_id}/groups",
+                     headers=headers, json=groups)
+    breakpoint()
+    print("Groups called")
+    pass
 
 
 def timestamp_to_half_hour_idx(timestamp):
@@ -88,16 +111,6 @@ def put_schedule(oh_queue_id, oh_session, schedule):
                      headers=headers, json=schedule)
 
 
-def put_groups(oh_queue_id, oh_session, groups):
-    base_url = "https://eecsoh.eecs.umich.edu/api/queues"
-    headers = {
-        "Cookie": f"session={oh_session}",
-        "Content-Type": "text/plain;charset=UTF-8"
-    }
-    r = requests.put(f"{base_url}/{oh_queue_id}/groups",
-                     headers=headers, json=groups)
-
-
 def get_schedule(oh_queue_id, oh_session):
     base_url = "https://eecsoh.eecs.umich.edu/api/queues"
     headers = {
@@ -116,7 +129,7 @@ def get_groups(oh_queue_id, oh_session):
     return r.json()
 
 
-def main():
+def old_main():
     api_key = os.environ.get("GOOGLE_CALENDAR_API_KEY")  # From eecs485.org
     cal_id = os.environ.get("GOOGLE_CALENDAR_ID")  # From eecs485.org
     oh_session = os.environ.get("OH_SESSION")  # From eecsoh
@@ -125,10 +138,6 @@ def main():
     events_json = get_calendar_events(api_key, cal_id)
     schedule = form_schedule(events_json)
     put_schedule(oh_queue_id, oh_session, schedule)
-
-    # Pipe input from agio
-    # groups = json.loads("".join(sys.stdin.readlines()))
-    # put_groups(oh_queue_id, oh_session, groups)
 
 
 if __name__ == '__main__':
