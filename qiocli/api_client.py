@@ -126,6 +126,8 @@ class QueueAPIClient(APIClient):
 
     def prepare_auth(self, path, *args, **kwargs):
         """Add authentication header with session cookie."""
+        if 'headers' not in kwargs:
+            kwargs['headers'] = {}
         kwargs['headers']['Cookie'] = f"session={self.api_session}"
 
 
@@ -166,6 +168,8 @@ class GoogleCalendarAPIClient(APIClient):
 
     def prepare_auth(self, path, *args, **kwargs):
         """Add authentication key to query string."""
+        if 'query' not in kwargs:
+            kwargs['query'] = {}
         kwargs['query']['key'] = self.api_key
 
 
