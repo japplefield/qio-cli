@@ -1,4 +1,3 @@
 """Queue CLI API."""
-from .google_calendar_api_client import GoogleCalendarAPIClient
-from .queue_api_client import QueueAPIClient
+from .api_client import GoogleCalendarAPIClient, QueueAPIClient
 from .utils import *
