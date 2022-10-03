@@ -169,7 +169,7 @@ class GoogleCalendarAPIClient(APIClient):
         kwargs['query']['key'] = self.api_key
 
 
-def get_auth(filename: str) -> str:
+def get_auth(auth_filename: str) -> str:
     """Search for auth file.
 
     Session file discovery works as follows:
@@ -180,9 +180,9 @@ def get_auth(filename: str) -> str:
     at least one directory, that file will be opened and the session read.
     """
     # Session filename provided and it does not exist
-    if os.path.dirname(filename) and not os.path.isfile(filename):
+    if os.path.dirname(auth_filename) and not os.path.isfile(auth_filename):
         raise AuthFileNotFound(
-            "Session file does not exist: {session_filename}")
+            "Session file does not exist: {auth_filename}")
 
     # Make sure that we're starting in a subdir of the home directory
     curdir = os.path.abspath(os.curdir)
@@ -191,14 +191,14 @@ def get_auth(filename: str) -> str:
 
     # Search, walking up the directory structure from PWD to home
     for dirname in walk_up_to_home_dir():
-        filename = os.path.join(dirname, filename)
+        filename = os.path.join(dirname, auth_filename)
         if os.path.isfile(filename):
-            with open(filename, encoding="utf8") as sessionfile:
-                return sessionfile.read().strip()
+            with open(filename, encoding="utf8") as authfile:
+                return authfile.read().strip()
 
     # Didn't find a session file
     raise AuthFileNotFound(
-        f"Session file not found: {filename}."
+        f"Session file not found: {auth_filename}."
     )
 
 

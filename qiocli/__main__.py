@@ -29,7 +29,7 @@ def schedule(ctx, operation, queue, gcal_id):
     OPERATION is GET or PUT.
     QUEUE is the specific queue id.
     """
-    queue_client = QueueAPIClient.make_default(debug=ctx["DEBUG"])
+    queue_client = QueueAPIClient.make_default(debug=ctx.obj["DEBUG"])
 
     if operation.lower() == 'get':
         print(queue_client.get(f"{queue}/schedule"))
@@ -41,7 +41,7 @@ def schedule(ctx, operation, queue, gcal_id):
     if not gcal_id:
         sys.exit("schedule without -g is not yet implemented.")
 
-    gcal_client = GoogleCalendarAPIClient.make_default(debug=ctx["DEBUG"])
+    gcal_client = GoogleCalendarAPIClient.make_default(debug=ctx.obj["DEBUG"])
     path = f"{gcal_id}/events"
 
     events_json = gcal_client.get(
@@ -63,7 +63,7 @@ def groups(ctx, operation, queue, filename):
     OPERATION is GET or PUT.
     QUEUE is the specific queue id.
     """
-    queue_client = QueueAPIClient.make_default(debug=ctx["DEBUG"])
+    queue_client = QueueAPIClient.make_default(debug=ctx.obj["DEBUG"])
 
     if operation.lower() == 'get':
         print(queue_client.get(f"{queue}/groups"))
