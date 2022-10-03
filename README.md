@@ -6,6 +6,47 @@ Queue (Q) CLI (`qio`) is a command line interface to [eecsoh.eecs.umich.edu](htt
 ## Quick start
 TODO
 
+## Usage
+
+Make sure you have a session stored in `.ohsession` or `~/.ohsession`. 
+
+### Groups
+
+Use `agio` to download a list of groups.
+
+```console
+$ agio groups -p <PROJECT_PK> -j > groups.json
+```
+
+Use `qio` to upload the downloaded groups.
+
+```console
+$ qio groups put <QUEUE_ID> -f groups.json
+```
+
+Example:
+
+```console
+$ agio groups -p 1524 -j > groups.json
+$ qio groups put 1gpzfffFeITHiGHBSvCaF106XfC -f groups.json
+```
+
+### Schedule
+
+Make sure you have a Google Calendar key stored in `.gcalkey` or `~/.gcalkey`.
+
+Use `qio` to download groups from Google Calendar and upload them.
+
+```console
+$ qio schedule put <QUEUE_ID> -g <GOOGLE_CALENDAR_ID>
+```
+
+Example:
+
+```console
+$ qio groups put 1gpzfffFeITHiGHBSvCaF106XfC -g c_vf0mfqo3skg16fka7aspdv97ts@group.calendar.google.com
+```
+
 ## Contributing
 See the guide for [guide for contributing](CONTRIBUTING.md).
 
