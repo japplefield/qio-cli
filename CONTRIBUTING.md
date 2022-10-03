@@ -6,7 +6,7 @@ Set up a development virtual environment.
 ```console
 $ python3 -m venv env
 $ source env/bin/activate
-$ pip install -e .[dev,test]
+$ pip install -e ."[dev,test]"
 ```
 
 A `qio` entry point script is installed in your virtual environment.
