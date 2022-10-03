@@ -24,13 +24,17 @@ def form_schedule(events):
     """Create office hours schedule 2d-array."""
     items = events['items']
     oh_sessions = filter(
-        lambda x: x['status'] != 'cancelled' and 'Office Hours' in x['summary'], items)
+        lambda x: x['status'] != 'cancelled' and 'Office Hours'
+        in x['summary'], items)
     oh_sessions = list(oh_sessions)
-    oh_sessions = [{
-        "summary": x['summary'],
-        "start": datetime.datetime.strptime(x['start']['dateTime'], "%Y-%m-%dT%H:%M:%S%z"),
-        "end": datetime.datetime.strptime(x['end']['dateTime'], "%Y-%m-%dT%H:%M:%S%z")}
-        for x in oh_sessions]
+    oh_sessions = [
+        {
+            "summary": x['summary'],
+            "start": datetime.datetime.strptime(x['start']['dateTime'],
+                                                "%Y-%m-%dT%H:%M:%S%z"),
+            "end": datetime.datetime.strptime(x['end']['dateTime'],
+                                              "%Y-%m-%dT%H:%M:%S%z")
+        } for x in oh_sessions]
     schedule = [["c" for j in range(48)] for i in range(7)]
     for event in oh_sessions:
         start = timestamp_to_half_hour_idx(event['start'])

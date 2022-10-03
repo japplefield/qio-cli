@@ -77,7 +77,7 @@ class APIClient:
 
         # Decode JSON
         if 'Content-Type' in response.headers and \
-            'application/json' in response.headers['Content-Type']:
+                'application/json' in response.headers['Content-Type']:
             try:
                 return response.json()
             except json.JSONDecodeError:
@@ -86,8 +86,7 @@ class APIClient:
                     f"{response.text}"
                 )
 
-        return None # Stop Pylint from complaining?
-
+        return None  # Stop Pylint from complaining?
 
 
 class QueueAPIClient(APIClient):
@@ -109,18 +108,11 @@ class QueueAPIClient(APIClient):
             base_url='https://eecsoh.eecs.umich.edu/api/queues/',
             debug=False
     ):
-        """Create an QueueAPIClient instance with API session found in session_filename.
-
-        Session file discovery works as follows:
-        - If session_filename is just a filename (no path information),
-        the current directory and every upward directory until the home
-        directory will be searched for a file with that name.
-        - If session_filename is an absolute path or a relative path that
-        contains at least one directory, that file will be opened and
-        the session read to it.
+        """Create an QueueAPIClient instance with API session.
 
         base_url will be prepended to all URLs passed to the client's
-        request methods and defaults to https://eecsoh.eecs.umich.edu/api/queues/.
+        request methods and defaults to
+        https://eecsoh.eecs.umich.edu/api/queues/.
         """
         return QueueAPIClient(get_auth(session_filename), base_url, debug)
 
@@ -132,7 +124,6 @@ class QueueAPIClient(APIClient):
         super().__init__(base_url, debug)
         self.api_session = api_session
 
-
     def prepare_auth(self, path, *args, **kwargs):
         kwargs['headers']['Cookie'] = f"session={self.api_session}"
 
@@ -140,8 +131,8 @@ class QueueAPIClient(APIClient):
 class GoogleCalendarAPIClient(APIClient):
     """Send authenticated requests to the Google Calendar API.
 
-    GoogleCalendarAPIClient is a wrapper around the requests library that adds an
-    authentication key to the query.  It supports all the arguments
+    GoogleCalendarAPIClient is a wrapper around the requests library that adds
+    an authentication key to the query.  It supports all the arguments
     accepted by the corresponding requests library methods.
     https://requests.readthedocs.io/
 
@@ -156,18 +147,11 @@ class GoogleCalendarAPIClient(APIClient):
             base_url='https://www.googleapis.com/calendar/v3/calendars/',
             debug=False
     ):
-        """Create an GoogleCalendarAPIClient instance with API key found in key_filename.
-
-        Key file discovery works as follows:
-        - If key_filename is just a filename (no path information),
-        the current directory and every upward directory until the home
-        directory will be searched for a file with that name.
-        - If key_filename is an absolute path or a relative path that
-        contains at least one directory, that file will be opened and
-        the key read to it.
+        """Create an GoogleCalendarAPIClient instance with API key.
 
         base_url will be prepended to all URLs passed to the client's
-        request methods and defaults to https://www.googleapis.com/calendar/v3/calendars/.
+        request methods and defaults to
+        https://www.googleapis.com/calendar/v3/calendars/.
         """
         return GoogleCalendarAPIClient(get_auth(key_filename), base_url, debug)
 
@@ -187,10 +171,10 @@ def get_auth(filename: str) -> str:
     """Search for auth file.
 
     Session file discovery works as follows:
-    - If session_filename is just a filename (no path information), the current
+    - If filename is just a filename (no path information), the current
     directory and every upward directory until the home directory will be
     searched for a file with that name.
-    - If session_filename is an absolute path or a relative path that contains
+    - If filename is an absolute path or a relative path that contains
     at least one directory, that file will be opened and the session read.
     """
     # Session filename provided and it does not exist

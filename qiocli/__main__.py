@@ -20,7 +20,8 @@ def main(ctx, debug):
 @main.command()
 @click.argument("operation", required=True)
 @click.argument("queue", required=True)
-@click.option("-g", "--google-calendar", "gcal_id", nargs=1, help="Google Calendar ID")
+@click.option("-g", "--google-calendar", "gcal_id",
+              nargs=1, help="Google Calendar ID")
 @click.pass_context
 def schedule(ctx, operation, queue, gcal_id):
     """Schedule.
