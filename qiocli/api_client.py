@@ -47,6 +47,10 @@ class APIClient:
         - Check HTTP status code
         - Parse JSON
         """
+        if 'headers' not in kwargs:
+            kwargs['headers'] = {}
+        if 'query' not in kwargs:
+            kwargs['query'] = {}
         self.prepare_auth(path, *args, **kwargs)
 
         # Append path to base URL
@@ -61,8 +65,13 @@ class APIClient:
             method = method_func.__name__.upper()
             print(f"{method} {url}")
 
+        # Get header from request
+        headers = kwargs.pop('headers', {})
+
+        breakpoint()
+
         # Call the underlying requests library function
-        response = method_func(url, *args, **kwargs)
+        response = method_func(url, *args, headers=headers, **kwargs)
 
         # Print the response
         if self.debug:
@@ -126,8 +135,6 @@ class QueueAPIClient(APIClient):
 
     def prepare_auth(self, path, *args, **kwargs):
         """Add authentication header with session cookie."""
-        if 'headers' not in kwargs:
-            kwargs['headers'] = {}
         kwargs['headers']['Cookie'] = f"session={self.api_session}"
 
 
@@ -168,8 +175,6 @@ class GoogleCalendarAPIClient(APIClient):
 
     def prepare_auth(self, path, *args, **kwargs):
         """Add authentication key to query string."""
-        if 'query' not in kwargs:
-            kwargs['query'] = {}
         kwargs['query']['key'] = self.api_key
 
 
