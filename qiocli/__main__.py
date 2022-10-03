@@ -24,7 +24,7 @@ def main(ctx, debug):
               nargs=1, help="Google Calendar ID")
 @click.pass_context
 def schedule(ctx, operation, queue, gcal_id):
-    """Schedule.
+    """Interact with queue Schedule.
 
     OPERATION is GET or PUT.
     QUEUE is the specific queue id.
@@ -58,7 +58,7 @@ def schedule(ctx, operation, queue, gcal_id):
 @click.option("-f", "--filename", help="File containing list of groups")
 @click.pass_context
 def groups(ctx, operation, queue, filename):
-    """Groups.
+    """Interact with queue Groups.
 
     OPERATION is GET or PUT.
     QUEUE is the specific queue id.
