@@ -8,7 +8,7 @@ TODO
 
 ## Usage
 
-Make sure you have a session stored in `.ohsession` or `~/.ohsession`. 
+Make sure you have a session stored in `.ohsession` or `~/.ohsession`. You can obtain this by signing in to the [queue](https://eecsoh.eecs.umich.edu) and finding the cookie called `session` in your browser's memory. Note that these sessions have a TTL of one month so this file will need to be updated monthly.
 
 ### Groups
 
