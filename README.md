@@ -7,7 +7,7 @@ Queue (Q) CLI (`qio`) is a command line interface to [eecsoh.eecs.umich.edu](htt
 TODO
 
 ## Contributing
-TODO
+See the guide for [guide for contributing](CONTRIBUTING.md).
 
 ## Acknowledgements
 Q CLI is written by Justin Applefield <jmapple@umich.edu> and inspired by [Autograder.io CLI](https://pypi.org/project/agiocli/)
