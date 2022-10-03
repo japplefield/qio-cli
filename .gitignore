@@ -1,8 +1,6 @@
 # Avoid accidentally committing a token
-.agtoken
-agtoken
-token
-.envvars.sh
+.ohsession
+.gcalkey
 
 # Python temporary files
 *.pyc
