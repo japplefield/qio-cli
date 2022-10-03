@@ -1,11 +1,14 @@
+"""Helper functions."""
 import datetime
 
 
 def timestamp_to_half_hour_idx(timestamp):
+    """Break down a timestamp to index by half hour in [0,47]."""
     return timestamp.hour * 2 + (0 if timestamp.minute < 30 else 1)
 
 
 def form_gcal_office_hours_search():
+    """Create query string to search for Office Hours."""
     now = datetime.datetime.now(datetime.timezone.utc)
     week_from_now = now + datetime.timedelta(weeks=1)
     return {
@@ -18,6 +21,7 @@ def form_gcal_office_hours_search():
 
 
 def form_schedule(events):
+    """Create office hours schedule 2d-array."""
     items = events['items']
     oh_sessions = filter(
         lambda x: x['status'] != 'cancelled' and 'Office Hours' in x['summary'], items)

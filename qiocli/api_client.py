@@ -4,7 +4,6 @@ Queue REST API client, a wrapper around the requests library.
 Based on HTTPClient by James Perretta
 https://github.com/eecs-autograder/autograder-contrib/
 """
-import copy
 import os
 import json
 import sys
@@ -14,8 +13,16 @@ import requests
 
 
 class APIClient:
+    """Base class for sending authenticated requests to a REST API.
+
+    Don't actually use this.
+    """
 
     def __init__(self, base_url, debug=False):
+        """Construct an API Client.
+
+        Don't actually use this.
+        """
         self.base_url = base_url
         self.debug = debug
 
@@ -26,8 +33,9 @@ class APIClient:
     def put(self, path, *args, **kwargs):
         """Call requests.put with authentication headers and base URL."""
         return self.do_request(requests.put, path, *args, **kwargs)
-    
+
     def prepare_auth(self, path, *args, **kwargs):
+        """Modify request to add authentication."""
         raise NotImplementedError
 
     def do_request(self, method_func, path, *args, **kwargs):
@@ -40,7 +48,7 @@ class APIClient:
         - Parse JSON
         """
         self.prepare_auth(path, *args, **kwargs)
-        
+
         # Append path to base URL
         url = urljoin(self.base_url, path)
 
@@ -68,7 +76,8 @@ class APIClient:
             )
 
         # Decode JSON
-        if 'Content-Type' in response.headers and 'application/json' in response.headers['Content-Type']:
+        if 'Content-Type' in response.headers and \
+            'application/json' in response.headers['Content-Type']:
             try:
                 return response.json()
             except json.JSONDecodeError:
@@ -76,6 +85,8 @@ class APIClient:
                     f"Error: JSON decoding failed for url {response.url}\n"
                     f"{response.text}"
                 )
+
+        return None # Stop Pylint from complaining?
 
 
 
@@ -118,14 +129,12 @@ class QueueAPIClient(APIClient):
 
         Most users should use QueueAPIClient.make_default() instead.
         """
-        super(base_url, debug)
+        super().__init__(base_url, debug)
         self.api_session = api_session
 
 
     def prepare_auth(self, path, *args, **kwargs):
-        headers = copy.deepcopy(kwargs.pop('headers', {}))
-        headers['Cookie'] = f"session={self.api_session}"
-        kwargs.put(headers)
+        kwargs['headers']['Cookie'] = f"session={self.api_session}"
 
 
 class GoogleCalendarAPIClient(APIClient):
@@ -167,13 +176,11 @@ class GoogleCalendarAPIClient(APIClient):
 
         Most users should use GoogleCalendarAPIClient.make_default() instead.
         """
-        super(base_url, debug)
+        super().__init__(base_url, debug)
         self.api_key = api_key
 
     def prepare_auth(self, path, *args, **kwargs):
-        query = copy.deepcopy(kwargs.pop('query', {}))
-        query['key'] = self.api_key
-        kwargs.put(query)
+        kwargs['query']['key'] = self.api_key
 
 
 def get_auth(filename: str) -> str:
