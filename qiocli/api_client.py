@@ -68,8 +68,6 @@ class APIClient:
         # Get header from request
         headers = kwargs.pop('headers', {})
 
-        breakpoint()
-
         # Call the underlying requests library function
         response = method_func(url, *args, headers=headers, **kwargs)
 
