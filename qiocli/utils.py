@@ -10,7 +10,7 @@ def timestamp_to_half_hour_idx(timestamp):
 def form_gcal_office_hours_search():
     """Create query string to search for Office Hours."""
     now = datetime.datetime.now(datetime.timezone.utc)
-    week_from_now = now + datetime.timedelta(weeks=1)
+    week_from_now = now + datetime.timedelta(days=6)
     return {
         "singleEvents": True,
         "q": "Office Hours",
