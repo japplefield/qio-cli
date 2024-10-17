@@ -25,7 +25,8 @@ def form_schedule(events):
     items = events['items']
     oh_sessions = filter(
         lambda x: x['status'] != 'cancelled' and 'Office Hours'
-        in x['summary'], items)
+        in x['summary'] and not ('Cancelled' in x['summary']
+                                 or 'No' in x['summary']), items)
     oh_sessions = list(oh_sessions)
     oh_sessions = [
         {
