@@ -15,7 +15,7 @@ Make sure you have a session stored in `.ohsession` or `~/.ohsession`. You can o
 Use `agio` to download a list of groups.
 
 ```console
-$ agio groups -p <PROJECT_PK> -j > groups.json
+$ agio groups --list-json --course <COURSE_NAME> --project <PROJECT> > groups.json
 ```
 
 Use `qio` to upload the downloaded groups.
@@ -27,7 +27,7 @@ $ qio groups put <QUEUE_ID> -f groups.json
 Example:
 
 ```console
-$ agio groups -p 1524 -j > groups.json
+$ agio groups --list-json --course eecs485f23 --project p2 > groups.json
 $ qio groups put 1gpzfffFeITHiGHBSvCaF106XfC -f groups.json
 ```
 
